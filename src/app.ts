@@ -1,19 +1,21 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application } from "express";
 import cors from "cors";
-import { StudentRoutes } from "./modules/student/student.route";
+import globalErrorHandler from "./middlewares/globalErrorHandler";
+import notFound from "./middlewares/notFound";
+import router from "./routes";
 const app: Application = express();
-// const port = 3000;
+
 app.use(express.json());
 app.use(cors());
-// applicagtion routes here
 
-// application routes
-app.use('/api/v1/students', StudentRoutes);
+app.use("/api/v1/students", router);
 
-const getAController = (req: Request, res: Response) => {
-  const a = 10;
-  res.send(a);
-};
+// const getAController = (req: Request, res: Response) => {
+//   const a = 10;
+//   res.send(a);
+// };
 
-app.get("/", getAController);
+// app.get("/", getAController);
+app.use(globalErrorHandler);
+app.use(notFound);
 export default app;
