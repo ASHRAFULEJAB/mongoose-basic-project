@@ -3,13 +3,7 @@ import { NextFunction, Request, RequestHandler, Response } from "express";
 import { StudentServices } from "./student.service";
 import sendResponse from "../../utils/sendRespomse";
 import httpStatus from "http-status";
-
-// Higher Order Function
-const catchAsync = (fn: RequestHandler) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch((err) => next(err));
-  };
-};
+import catchAsync from "../../utils/catchAsync";
 
 const getAllStudents = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {

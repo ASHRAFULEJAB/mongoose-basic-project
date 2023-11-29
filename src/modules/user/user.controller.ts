@@ -15,7 +15,7 @@ const createStudent = async (
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "Student is retrieved succesfully",
+      message: "Student is created succesfully",
       data: result,
     });
   } catch (err) {
