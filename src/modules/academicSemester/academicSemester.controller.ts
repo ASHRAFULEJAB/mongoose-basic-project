@@ -1,62 +1,26 @@
-import { Schema } from "mongoose";
-import { TAcademicSemester } from "./academicSemester.interface";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { NextFunction, Request, Response } from "express";
+import sendResponse from "../../utils/sendRespomse";
+import httpStatus from "http-status";
+import { AcademicServices } from "./academicSemester.service";
+import catchAsync from "../../utils/catchAsync";
 
-const academicSchema = new Schema<TAcademicSemester>({
-  name: {
-    type: String,
-    enum: {
-      values: ["Autam", "Summar", "Fall"],
-      message: "{VALUES} are required",
-    },
-  },
-  code: {
-    type: String,
-    enum: {
-      values: ["01", "02", "03"],
-      message: "{VALUES} are required",
-    },
-  },
-  year: {
-    type: Date,
-  },
-  startMonth: {
-    type: String,
-    enum: {
-      values: [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ],
-    },
-  },
-  endMonth: {
-    type: String,
-    enum: {
-      values: [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ],
-    },
-  },
-});
+const createAcademicSemester = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    // const { password, student: studentData } = req.body;
+    const result = await AcademicServices.createAcademicSemesterIntoDB(
+      req.body
+    );
 
-export default academicSchema;
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Academic semester is created succesfully",
+      data: result,
+    });
+  }
+);
+
+export const AcademicSemesterController = {
+  createAcademicSemester,
+};
