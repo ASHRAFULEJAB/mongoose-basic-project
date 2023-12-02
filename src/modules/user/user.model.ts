@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 
 const userSchema = new Schema<TUser>(
   {
-    id: { type: String, required: [true, "User id is required"] },
+    id: { type: String, required: [true, "User id is required"], unique: true },
     password: {
       type: String,
       required: true,
@@ -57,6 +57,5 @@ userSchema.post("save", function (doc, next) {
   doc.password = "";
   next();
 });
-
 
 export const User = model<TUser>("Users", userSchema);
