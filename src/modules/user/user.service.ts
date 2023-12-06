@@ -1,3 +1,4 @@
+import httpStatus from "http-status";
 import config from "../../app/config";
 import { AcademicSemester } from "../academicSemester/academicSemester.model";
 import { TStudent } from "../student/student.interface";
@@ -6,6 +7,8 @@ import { TUser } from "./user.interface";
 
 import { User } from "./user.model";
 import { generateStudentId } from "./user.utils";
+import AppError from "../../errors/AppError";
+import mongoose from "mongoose";
 
 const createStudentIntoDB = async (password: string, payload: TStudent) => {
   const userData: Partial<TUser> = {};
@@ -16,20 +19,44 @@ const createStudentIntoDB = async (password: string, payload: TStudent) => {
     payload.admissionSemester
   );
 
-  //set  generated id
-  userData.id = await generateStudentId(admissionSemester);
-  userData.role = "student";
+  // transaction here
 
-  const newUser = await User.create(userData);
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    //set  generated id
+    userData.id = await generateStudentId(admissionSemester);
+    userData.role = "student";
 
-  if (Object.keys(newUser).length) {
-    payload.id = newUser.id;
-    payload.user = newUser._id;
-    const newStudient = await Student.create(payload);
-    return newStudient;
+    const newUser = await User.create([userData], { session });
+
+    if (!newUser.length) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Failed to create user");
+    }
+
+    if (newUser.length) {
+      payload.id = newUser[0].id;
+      payload.user = newUser[0]._id;
+      const newStudent = await Student.create([payload], { session });
+
+      if (!newStudent.length) {
+        throw new AppError(httpStatus.BAD_REQUEST, "Failed to create Student!");
+      }
+
+      await session.commitTransaction();
+      await session.endSession();
+      return newStudent;
+    }
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
   }
+
   if (userData.id === userData.id && payload.email === payload.email) {
-    throw new Error("user id and email should be unique");
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      "user id and email should be unique"
+    );
   }
 };
 
